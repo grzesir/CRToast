@@ -116,6 +116,7 @@ typedef NS_ENUM(NSInteger, CRToastState) {
 
 @property (nonatomic, readonly) CRToastType notificationType;
 @property (nonatomic, assign) CGFloat preferredHeight;
+@property (nonatomic, assign) CGFloat cornerRadius;
 @property (nonatomic, readonly) CRToastPresentationType presentationType;
 @property (nonatomic, readonly) BOOL displayUnderStatusBar;
 
@@ -212,6 +213,8 @@ NSString *const kCRToastInteractionRespondersKey            = @"kCRToastInteract
 
 NSString *const kCRToastAutorotateKey                       = @"kCRToastAutorotateKey";
 
+NSString *const kCRToastCornerRadiusKey                      = @"kCRToastCornerRadius";
+
 #pragma mark - Option Defaults
 
 static CRToastType                  kCRNotificationTypeDefault              = CRToastTypeStatusBar;
@@ -256,6 +259,8 @@ static NSArray  *                   kCRInteractionResponders                = ni
 static BOOL                         kCRAutoRotateDefault                    = YES;
 
 static NSDictionary *               kCRToastKeyClassMap                     = nil;
+
+static CGFloat                      kCRNotificationCornerRadiusDefault      = 0;
 
 #pragma mark - Layout Helper Functions
 
@@ -450,7 +455,8 @@ NSArray * CRToastGenericRecognizersMake(id target, CRToastInteractionResponder *
                                 kCRToastBackgroundColorKey                  : NSStringFromClass([UIColor class]),
                                 kCRToastImageKey                            : NSStringFromClass([UIImage class]),
                                 kCRToastInteractionRespondersKey            : NSStringFromClass([NSArray class]),
-                                kCRToastAutorotateKey                       : NSStringFromClass([@(kCRAutoRotateDefault) class])};
+                                kCRToastAutorotateKey                       : NSStringFromClass([@(kCRAutoRotateDefault) class]),
+                                kCRToastCornerRadiusKey                     : NSStringFromClass([@(kCRNotificationCornerRadiusDefault) class])};
     }
 }
 
@@ -507,6 +513,8 @@ NSArray * CRToastGenericRecognizersMake(id target, CRToastInteractionResponder *
     
     if (defaultOptions[kCRToastInteractionRespondersKey])           kCRInteractionResponders               = defaultOptions[kCRToastInteractionRespondersKey];
     if (defaultOptions[kCRToastAutorotateKey])                      kCRAutoRotateDefault                   = [defaultOptions[kCRToastAutorotateKey] boolValue];
+    
+    if (defaultOptions[kCRToastCornerRadiusKey])                    kCRNotificationCornerRadiusDefault       = [defaultOptions[kCRToastCornerRadiusKey] floatValue];
 }
 
 #pragma mark - Notification View Helpers
@@ -595,6 +603,12 @@ NSArray * CRToastGenericRecognizersMake(id target, CRToastInteractionResponder *
     return _options[kCRToastNotificationPreferredHeightKey] ?
     [_options[kCRToastNotificationPreferredHeightKey] floatValue] :
     kCRNotificationPreferredHeightDefault;
+}
+
+- (CGFloat)cornerRadius {
+    return _options[kCRToastCornerRadiusKey] ?
+    [_options[kCRToastCornerRadiusKey] floatValue] :
+    kCRNotificationCornerRadiusDefault;
 }
 
 - (CRToastPresentationType)presentationType {
@@ -1265,7 +1279,7 @@ CRToastAnimationStepBlock CRToastOutwardAnimationsSetupBlock(CRToastManager *wea
     _notificationWindow.hidden = NO;
     CGSize notificationSize = CRNotificationViewSize(notification.notificationType, notification.preferredHeight);
     
-    CGRect containerFrame = CGRectMake(0, 0, notificationSize.width, notificationSize.height);
+    CGRect containerFrame = CGRectMake(0, 0 - notification.cornerRadius, notificationSize.width, notificationSize.height + notification.cornerRadius);
     
     if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft) {
         containerFrame = CGRectMake(0, 0, notificationSize.height, notificationSize.width);
@@ -1307,6 +1321,7 @@ CRToastAnimationStepBlock CRToastOutwardAnimationsSetupBlock(CRToastManager *wea
         weakSelf.notificationView.frame = weakSelf.notificationWindow.rootViewController.view.bounds;
         weakSelf.statusBarView.frame = notification.statusBarViewAnimationFrame1;
     };
+    weakSelf.notificationView.layer.cornerRadius = notification.cornerRadius;
     
     NSString *notificationUUIDString = notification.uuid.UUIDString;
     CRToastAnimationCompletionBlock inwardAnimationsCompletionBlock = ^void(BOOL finished) {

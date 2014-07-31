@@ -319,6 +319,12 @@ extern NSString *const kCRToastInteractionRespondersKey;
 
 extern NSString *const kCRToastAutorotateKey;
 
+/**
+ The corner radius for the bottom two corners.
+ */
+
+extern NSString *const kCRToastCornerRadiusKey;
+
 
 /**
  A toast manager providing Class level API's for the presentation of notifications with a variery of options

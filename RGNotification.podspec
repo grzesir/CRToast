@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name     = 'RGToast'
+  s.name     = 'RGNotification'
   s.version  = '0.0.8'
   s.license  = 'MIT'
   s.summary  = 'A modern iOS toast view that can fit your notification needs, now with extra styling parameters'
